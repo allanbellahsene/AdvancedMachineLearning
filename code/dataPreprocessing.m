@@ -65,7 +65,7 @@ for i = 2:6
 end
 
 % Change date format
-Funds_Returns.Date=datetime(Funds_Returns.Date,'Format','yyyyMMdd');
+Funds_Returns.Date=datetime(Funds_Returns.Date,'Format','yyyy-MM-dd');
 Funds_Returns.Properties.VariableNames={'Date' 'CS_Commo' 'CS_Bond' 'Fidelity_Bond' 'Pictet_Gold' 'Vanguard_Equity'};
 
 % Export data
@@ -101,15 +101,15 @@ end
 
 % Import the data
 Switzerland10Y = readtable(path{1}, opts);
-Switzerland10Y.Date=datetime(Switzerland10Y.Date,'Format','yyyyMMdd');
+Switzerland10Y.Date=datetime(Switzerland10Y.Date,'Format','yyyy-MM-dd');
 Japan10Y = readtable(path{2}, opts);
-Japan10Y.Date=datetime(Japan10Y.Date,'Format','yyyyMMdd');
+Japan10Y.Date=datetime(Japan10Y.Date,'Format','yyyy-MM-dd');
 Germany10Y = readtable(path{3}, opts);
-Germany10Y.Date=datetime(Germany10Y.Date,'Format','yyyyMMdd');
+Germany10Y.Date=datetime(Germany10Y.Date,'Format','yyyy-MM-dd');
 France10Y = readtable(path{4}, opts);
-France10Y.Date=datetime(France10Y.Date,'Format','yyyyMMdd');
+France10Y.Date=datetime(France10Y.Date,'Format','yyyy-MM-dd');
 US10Y = readtable(path{5}, opts);
-US10Y.Date=datetime(US10Y.Date,'Format','yyyyMMdd');
+US10Y.Date=datetime(US10Y.Date,'Format','yyyy-MM-dd');
 
 % Clear temporary variables
 clear opts
@@ -161,19 +161,19 @@ end
 
 % Import the data
 CAC40_data = readtable(path{1}, opts);
-CAC40_data.Date=datetime(CAC40_data.Date,'Format','yyyyMMdd');
+CAC40_data.Date=datetime(CAC40_data.Date,'Format','yyyy-MM-dd');
 DAX_data = readtable(path{2}, opts);
-DAX_data.Date=datetime(DAX_data.Date,'Format','yyyyMMdd');
+DAX_data.Date=datetime(DAX_data.Date,'Format','yyyy-MM-dd');
 DOWJONES_data = readtable(path{3}, opts);
-DOWJONES_data.Date=datetime(DOWJONES_data.Date,'Format','yyyyMMdd');
+DOWJONES_data.Date=datetime(DOWJONES_data.Date,'Format','yyyy-MM-dd');
 EURO100_data = readtable(path{4}, opts);
-EURO100_data.Date=datetime(EURO100_data.Date,'Format','yyyyMMdd');
+EURO100_data.Date=datetime(EURO100_data.Date,'Format','yyyy-MM-dd');
 NIKKEI225_data = readtable(path{5}, opts);
-NIKKEI225_data.Date=datetime(NIKKEI225_data.Date,'Format','yyyyMMdd');
+NIKKEI225_data.Date=datetime(NIKKEI225_data.Date,'Format','yyyy-MM-dd');
 SP500_data = readtable(path{5}, opts);
-SP500_data.Date=datetime(SP500_data.Date,'Format','yyyyMMdd');
+SP500_data.Date=datetime(SP500_data.Date,'Format','yyyy-MM-dd');
 VIX_data = readtable(path{5}, opts);
-VIX_data.Date=datetime(VIX_data.Date,'Format','yyyyMMdd');
+VIX_data.Date=datetime(VIX_data.Date,'Format','yyyy-MM-dd');
 
 
 % Join Indices
@@ -189,7 +189,7 @@ marketIndices_Returns(:,1)=marketIndices(2:end,1);
 for i = 2:8
     marketIndices_Returns(:,i)=array2table(log(table2array(marketIndices(2:end,i))./table2array(marketIndices(1:end-1,i))));
 end
-marketIndices_Returns.Properties.VariableNames={'Date' 'CAC40_data' 'DAX_data' 'DOWJONES_data' 'EURO100_data' 'NIKKEI225_data' 'SP500_data' 'VIX_data'};
+marketIndices_Returns.Properties.VariableNames={'Date' 'CAC40' 'DAX' 'DOWJONES' 'EURO100' 'NIKKEI225' 'SP500' 'VIX'};
 % Export data
 writetable(marketIndices_Returns,fullfile('..', 'data', 'CLEANED','marketIndices_Returns.dat'),'WriteRowNames',true)  
 
@@ -206,15 +206,15 @@ end
 
 % Import the data
 EURCHF = readtable(path{1}, opts);
-EURCHF.Date=datetime(EURCHF.Date,'Format','yyyyMMdd');
+EURCHF.Date=datetime(EURCHF.Date,'Format','yyyy-MM-dd');
 EURGBP = readtable(path{2}, opts);
-EURGBP.Date=datetime(EURGBP.Date,'Format','yyyyMMdd');
+EURGBP.Date=datetime(EURGBP.Date,'Format','yyyy-MM-dd');
 EURUSD = readtable(path{3}, opts);
-EURUSD.Date=datetime(EURUSD.Date,'Format','yyyyMMdd');
+EURUSD.Date=datetime(EURUSD.Date,'Format','yyyy-MM-dd');
 GBPUSD = readtable(path{4}, opts);
-GBPUSD.Date=datetime(GBPUSD.Date,'Format','yyyyMMdd');
+GBPUSD.Date=datetime(GBPUSD.Date,'Format','yyyy-MM-dd');
 USDJPY = readtable(path{5}, opts);
-USDJPY.Date=datetime(USDJPY.Date,'Format','yyyyMMdd');
+USDJPY.Date=datetime(USDJPY.Date,'Format','yyyy-MM-dd');
 
 % Join Yields
 exchangeRates = innerjoin(EURCHF, EURGBP,'LeftKeys',1,'RightKeys',1);
@@ -245,23 +245,23 @@ end
 
 % Import the data
 GOLD_data = readtable(path{1}, opts);
-EURCGOLD_dataHF.Date=datetime(GOLD_data.Date,'Format','yyyyMMdd');
+EURCGOLD_dataHF.Date=datetime(GOLD_data.Date,'Format','yyyy-MM-dd');
 OIL_data = readtable(path{2}, opts);
-OIL_data.Date=datetime(OIL_data.Date,'Format','yyyyMMdd');
+OIL_data.Date=datetime(OIL_data.Date,'Format','yyyy-MM-dd');
 SILVER_data = readtable(path{3}, opts);
-SILVER_data.Date=datetime(SILVER_data.Date,'Format','yyyyMMdd');
+SILVER_data.Date=datetime(SILVER_data.Date,'Format','yyyy-MM-dd');
 
 
 % Join Yields
 commodities_Price = innerjoin(GOLD_data, OIL_data,'LeftKeys',1,'RightKeys',1);
 commodities_Price = innerjoin(commodities_Price, SILVER_data,'LeftKeys',1,'RightKeys',1);
 commodities_Price=rmmissing(commodities_Price);
-commodities_Price.Date=datetime(commodities_Price.Date,'Format','yyyyMMdd');
+commodities_Price.Date=datetime(commodities_Price.Date,'Format','yyyy-MM-dd');
 % Compute return of funds
 commodities_Return(:,1)=commodities_Price(2:end,1);  
 for i = 2:4
     commodities_Return(:,i)=array2table(log(table2array (commodities_Price(2:end,i))./table2array(commodities_Price(1:end-1,i))));
 end
-commodities_Return.Properties.VariableNames={'Date' 'GOLD_data' 'OIL_data'  'SILVER_data'};
+commodities_Return.Properties.VariableNames={'Date' 'GOLD' 'OIL'  'SILVER'};
 % Export data
 writetable(commodities_Return,fullfile('..', 'data', 'CLEANED','commodities_Return.dat'),'WriteRowNames',true)  
