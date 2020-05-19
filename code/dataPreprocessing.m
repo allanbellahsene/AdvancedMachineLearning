@@ -114,18 +114,27 @@ US10Y.Date=datetime(US10Y.Date,'Format','yyyy-MM-dd');
 % Clear temporary variables
 clear opts
 
+
 % Join Yields
 Yields = innerjoin(Switzerland10Y, Japan10Y,'LeftKeys',1,'RightKeys',1);
 Yields = innerjoin(Yields, Germany10Y,'LeftKeys',1,'RightKeys',1);
 Yields = innerjoin(Yields, France10Y,'LeftKeys',1,'RightKeys',1);
 Yields = innerjoin(Yields, US10Y,'LeftKeys',1,'RightKeys',1);
 Yields=rmmissing(Yields);
-% divide by 100
-Yields(:,[2:6])=array2table(table2array(Yields(:,[2:6]))/100);
-Yields.Properties.VariableNames={'Date' 'Switzerland10Y' 'Japan10Y' 'Germany10Y' 'France10Y' 'US10Y'};
+
+% divide by 100 add 1
+Yields(:,[2:6])=array2table(table2array(Yields(:,[2:6]))/100+1);
+
+
+% Compute return of funds
+delta_Yields(:,1)=Yields(2:end,1);  
+for i = 2:6
+    delta_Yields(:,i)=array2table(log(table2array(Yields(2:end,i))./table2array(Yields(1:end-1,i))));
+end
+delta_Yields.Properties.VariableNames={'Date' 'Switzerland10Y' 'Japan10Y' 'Germany10Y' 'France10Y' 'US10Y'}; 
 
 % Export data
-writetable(Yields,fullfile('..', 'data', 'CLEANED','Yields.dat'),'WriteRowNames',true)  
+writetable(delta_Yields,fullfile('..', 'data', 'CLEANED','delta_Yields.dat'),'WriteRowNames',true)  
 
 %% MARKET INDICES IMPORTS
 

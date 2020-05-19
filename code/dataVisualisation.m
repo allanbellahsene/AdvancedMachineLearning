@@ -12,7 +12,7 @@ clear; close all; clc;
 
 funds_Returns = readtable(fullfile('..', 'data', 'CLEANED', 'Funds_Returns.dat'));
 commodities_Returns = readtable(fullfile('..', 'data', 'CLEANED', 'commodities_Return.dat'));
-yields = readtable(fullfile('..', 'data', 'CLEANED', 'Yields.dat'));
+yields = readtable(fullfile('..', 'data', 'CLEANED', 'delta_Yields.dat'));
 indices_Returns = readtable(fullfile('..', 'data', 'CLEANED', 'marketIndices_Returns.dat'));
 xrate_Changes = readtable(fullfile('..', 'data', 'CLEANED', 'exchangeRates_Changes.dat'));
 
@@ -20,7 +20,9 @@ xrate_Changes = readtable(fullfile('..', 'data', 'CLEANED', 'exchangeRates_Chang
 
 portfolio_Return(:,1)=funds_Returns(:,1); 
 portfolio_Return(:,2)=array2table(1/5*(table2array(funds_Returns(:,2))+table2array(funds_Returns(:,3)) +table2array(funds_Returns(:,4)) +table2array(funds_Returns(:,5)) +table2array(funds_Returns(:,6)) ));
-portfolio_Return.Properties.VariableNames={'Date' 'y_t' };
+portfolio_Return(2:end,3)=portfolio_Return(1:end-1,2);
+portfolio_Return(3:end,4)=portfolio_Return(1:end-2,2);
+portfolio_Return.Properties.VariableNames={'Date' 'y_t' 'y_t_1' 'y_t_2' };
 
 %%
 % Create Matrix with t-1
@@ -28,22 +30,57 @@ X_T = innerjoin(portfolio_Return, yields,'LeftKeys',1,'RightKeys',1);
 X_T = innerjoin(X_T, indices_Returns,'LeftKeys',1,'RightKeys',1);
 X_T = innerjoin(X_T, commodities_Returns,'LeftKeys',1,'RightKeys',1);
 X_T = innerjoin(X_T, xrate_Changes,'LeftKeys',1,'RightKeys',1);
-T=X_T(:, contains(X_T.Properties.VariableNames, {'Date' 'y_t'}));
-T(1,:)=[];
+X_T(1:2,:) = [];
 columns=X_T.Properties.VariableNames;
-X_T.y_t=[];
+% T=X_T(:, contains(X_T.Properties.VariableNames, {'Date' 'y_t'}));
+% 
+% 
+% T(1,:)=[];
 
-X_m=table2array(X_T(1:end-1,2:end));
-dataTable=[T, array2table(X_m)];
-dataTable.Properties.VariableNames=columns;
+% X_T.y_t=[];
+% X_T.y_t_1=[];
+% X_m=table2array(X_T(1:end-1,2:end));
+% X_m_1=table2array(X_T(1:end-2,3:end));
+% dataTable=[T, array2table(X_m), array2table(X_m_1)];
+% dataTable.Properties.VariableNames=columns;
 
-writetable(dataTable,fullfile('..', 'data', 'CLEANED','cleaned_data.dat'),'WriteRowNames',true)  
+writetable(X_T,fullfile('..', 'data', 'CLEANED','cleaned_data.dat'),'WriteRowNames',true)  
 %% Data visualisation
 
-figure()
-set(gcf, 'Position',  [500, 500, 1000, 1000])
+fig1=figure();
+
+set(gca,'FontSize',16,'XTickLabelRotation',90)
+set(gcf, 'Position',  [500, 500, 800, 1000])
 for i=1:21
     subplot(7,3,i)
-    plot(table2array(dataTable(:,1)), table2array(dataTable(:,i+1))) 
+    plot(table2array(X_T(:,1)), table2array(X_T(:,i+1))) 
     title(sprintf('%s', columns{i+1}))
 end
+sgtitle('Daily Returns', 'FontSize', 20);
+saveas(fig1,fullfile('..', 'figures','daily_return.png'));
+
+%% Functions
+
+correlationTable=array2table(corr(dataExploratory.Variables));
+correlationTable.Properties.VariableNames=dataExploratory.Properties.VariableNames;
+correlationTable.Properties.RowNames=dataExploratory.Properties.VariableNames;
+fig3=figure();
+set(gcf, 'Position',  [500, 500, 800, 1000])
+heatmap(correlationTable.Properties.VariableNames,correlationTable.Properties.VariableNames,abs(correlationTable.Variables),'FontSize',16)
+saveas(fig3,fullfile('..', 'figures','Heatmap_01.png'));
+
+%% Boxplot
+
+
+dataExploratory= removevars(X_T,{'Date'});
+fig2=figure();
+boxplot(dataExploratory.Variables*100,dataExploratory.Properties.VariableNames)
+set(gca,'FontSize',16,'XTickLabelRotation',90)
+set(gcf, 'Position',  [500, 500, 800, 1000])
+ylabel('Value (%)')
+title('Boxplot of all variables', 'FontSize', 20)
+saveas(fig2,fullfile('..', 'figures','Boxplot_01.png'));
+
+%% LWPR
+test_lwpr_2D();
+
