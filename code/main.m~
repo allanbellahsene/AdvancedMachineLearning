@@ -34,6 +34,7 @@ n_out = size(Y,2) ;                             % : number of output dimensions
 diag_only = [0 1];                              % : 1/0 to update only the diagonal distance metric
 meta = [0 1];                                   % : 1/0 to allow the use of a meta learning parameter
 meta_rate = [0.1 1 10 100 1000];                    % : the meta learning rate
+
 penalty = [1.e-4 1.e-5 1.e-6 1.e-7];            % : a smoothness bias, usually a pretty small number (1.e-4)
 init_alpha= [0.1 1  100 1000];                    % : the initial learning rates
 init_D= [0.1 1 25 50 200];                          % : the initial distance metrics
@@ -67,7 +68,7 @@ hyperparameters=table2array(hypToTest);
 
 %% Launch LWPR Algorithm
 
-[NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters(3000:end,:),X,Y,Xt,Yt);
+[NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt);
 
 %% Write Table
 

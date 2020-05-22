@@ -6,7 +6,7 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
     Y_prediction = zeros(length(Yt),length((hyperparameters(:,1))));
     
     for k=1:length((hyperparameters(:,1)))
-        
+        try
         %% Initialize model
         ID =hyperparameters(k,1); % ID              : desired ID of model
         
@@ -64,5 +64,8 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         NMSE(2,k)=nmse;
         CPU(2,k)=e_2;
         Y_prediction(:,k)=Yp;
+        catch ME
+        fprintf('No success: %s\n', ME.message);
+        end
     end
 end
