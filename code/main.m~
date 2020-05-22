@@ -56,31 +56,18 @@ T = array2table(hyperparameters);
 T.Properties.VariableNames={'ID' 'n_in' 'n_out' 'diag_only' 'meta' ...
     'meta_rate' 'penalty' 'init_alpha' 'init_D' 'w_gen' 'init_lambda' ...
     'final_lambda' 'tau_lambda'};
-
-
 %% Hyperparameters to Test
-
-% Choose specific hyperparameters to test
+% Choose specific hyperpaamameters to test
 rows = (T.diag_only==1 & T.meta==1 & T.meta_rate==100 & T.init_alpha==100 & T.init_D==25);
 hypToTest = T(rows,:);
 hyperparameters=table2array(hypToTest);
-
-%% Launch LWPR Algorithm
-
+%%
 [NMSE, CPU, Y_prediction]= lwpr_test(table2array(hypToTest),X,Y,Xt,Yt);
 
-%% Get the minimum nMSE and the ID
-
+%%
 [value, index] = min(NMSE(2,:));
 [row, col] = ind2sub(size(NMSE), index);
-hypToTest(col,:).ID
-fprintf('#ID = %d nMSE=%5.3f',hypToTest(col,:).ID);
-
 %% Plot
-
 plot(Y_prediction(:,col))
 hold on
 plot(Yt)
-hold off
-%%
-plot(data.Date,data.y_t)

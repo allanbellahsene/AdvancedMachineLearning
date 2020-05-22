@@ -49,7 +49,7 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         
         Yp = zeros(size(Yt));
         for i=1:length(Xt),
-            [yp,w,conf]=lwpr('Predict',ID,Xt(i,:)',0.001);
+            [yp,w,conf]=lwpr('Predict',ID,Xt(i,:)',0.01);
             Yp(i,1) = yp;
         end
         ep   = Yt-Yp;
