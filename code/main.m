@@ -33,19 +33,16 @@ meta = [0 1]; % : 1/0 to allow the use of a meta learning parameter
 meta_rate = [1 10 100 1000]; % : the meta learning rate
 penalty = [1.e-4 1.e-5 1.e-6 1.e-7]; % : a smoothness bias, usually a pretty small number (1.e-4)
 init_alpha= [1 10 100 1000]; % : the initial learning rates
-
-
 init_D= [1 25 50 200];
 w_gen = [0.1 0.01 0.1 0.2 0.3];
+init_lambda = [0.850 0.995 0.999];
 
-% init_lambda = [0.1 0.1 0.5 0.995];
-%hyperparameters=transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,penalty, init_alpha, init_D, w_gen, init_lambda));
-
-hyperparameters=transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,penalty, init_alpha, init_D, w_gen));
+hyperparameters=transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,penalty, init_alpha, init_D, w_gen, init_lambda));
 IDs = transpose([1:1:length(hyperparameters)]);
 hyperparameters = [IDs hyperparameters];
+
 T = array2table(hyperparameters);
-T.Properties.VariableNames={'ID' 'n_in' 'n_out' 'diag_only' 'meta' 'meta_rate' 'penalty' 'init_alpha' 'init_D' 'w_gen'};
+T.Properties.VariableNames={'ID' 'n_in' 'n_out' 'diag_only' 'meta' 'meta_rate' 'penalty' 'init_alpha' 'init_D' 'w_gen' 'init_lambda'};
 
 %% Hyperparameters to Test
 % 

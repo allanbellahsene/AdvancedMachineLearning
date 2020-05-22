@@ -13,7 +13,7 @@ function [NMSE, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         lwpr('Change',ID,'w_gen',hyperparameters(k,10));                  % more overlap gives smoother surfaces
         %     lwpr('Change',ID,'init_lambda',hyperparameters(k,11));
         %     lwpr('Change',ID,'w_gen',0.2);                  % more overlap gives smoother surfaces
-        lwpr('Change',ID,'init_lambda',0.995);
+        lwpr('Change',ID,'init_lambda',hyperparameters(k,11));
         lwpr('Change',ID,'final_lambda',0.9999);
         lwpr('Change',ID,'tau_lambda',0.9999);
         n= length(X);
