@@ -7,7 +7,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear; close all; clc;
-addpath(genpath('functions'))
+
+addpath(genpath('functions')) % add function apth
+rng default % keep same random numbers
 
 %% Imports data
 data = readtable(fullfile('..', 'data', 'CLEANED', 'cleaned_data.dat'));
@@ -34,24 +36,25 @@ meta_rate = [1 10 100 1000]; % : the meta learning rate
 penalty = [1.e-4 1.e-5 1.e-6 1.e-7]; % : a smoothness bias, usually a pretty small number (1.e-4)
 init_alpha= [1 10 100 1000]; % : the initial learning rates
 init_D= [1 25 50 200];
-w_gen = [0.1 0.01 0.1 0.2 0.3];
-init_lambda = [0.850 0.995 0.999];
+w_gen = [0.0001 0.00025 0.0005 0.00075 0.001];
+init_lambda = [0.99];
+final_lambda = [0.99];
+tau_lambda = [0.99];
 
-hyperparameters=transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,penalty, init_alpha, init_D, w_gen, init_lambda));
+hyperparameters=transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,penalty, init_alpha, init_D, w_gen, init_lambda, final_lambda, tau_lambda));
 IDs = transpose([1:1:length(hyperparameters)]);
 hyperparameters = [IDs hyperparameters];
 
 T = array2table(hyperparameters);
-T.Properties.VariableNames={'ID' 'n_in' 'n_out' 'diag_only' 'meta' 'meta_rate' 'penalty' 'init_alpha' 'init_D' 'w_gen' 'init_lambda'};
-
+T.Properties.VariableNames={'ID' 'n_in' 'n_out' 'diag_only' 'meta' 'meta_rate' 'penalty' 'init_alpha' 'init_D' 'w_gen' 'init_lambda' 'final_lambda' 'tau_lambda'};
 %% Hyperparameters to Test
 % 
 
-rows = (T.diag_only==1 & T.meta==1 & T.meta_rate==100 & T.init_alpha==100 & T.init_D==25 & T.w_gen==0.2);
+rows = (T.diag_only==1 & T.meta==1 & T.meta_rate==100 & T.init_alpha==100 & T.init_D==25);
 hypToTest = T(rows,:);
 hyperparameters=table2array(hypToTest);
 %%
-[NMSE, Y_prediction]= lwpr_test(table2array(hypToTest),X,Y,Xt,Yt);
+[NMSE, CPU, Y_prediction]= lwpr_test(table2array(hypToTest),X,Y,Xt,Yt);
 
 %%
 [value, index] = min(NMSE(2,:));
