@@ -48,24 +48,26 @@ else
     n_in = size(X,2) ;                              % : number of input dimensions
     n_out = size(Y,2) ;                             % : number of output dimensions
     
-    diag_only = [0 1];                              % : 1/0 to update only the diagonal distance metric
-    meta = [0 1];                                   % : 1/0 to allow the use of a meta learning parameter
-    meta_rate = [0.1 1 10 100 1000];                    % : the meta learning rate
-    penalty = [1.e-4 1.e-5 1.e-6 1.e-7];            % : a smoothness bias, usually a pretty small number (1.e-4)
-    init_alpha= [0.1 1  100 1000];                    % : the initial learning rates
-    init_D= [0.1 1 25 50 200];                          % : the initial distance metrics
-    w_gen = [0.0001 0.00015 0.0002 0.00025 0.0003];  % : weight
-    init_lambda = [0.99];                           % : the initial lambda
-    final_lambda = [0.99];                          % : the final lambda
-    tau_lambda = [0.99];                            % : the tau lambda
+    diag_only = [1];                              % : 1/0 to update only the diagonal distance metric
+    meta = [1];                                   % : 1/0 to allow the use of a meta learning parameter
+    meta_rate = [0.1];                    % : the meta learning rate
+    penalty = [1.e-5 1.e-3];            % : a smoothness bias, usually a pretty small number (1.e-4)
+    init_alpha= [ 0.0001 0.001];                    % : the initial learning rates
+    init_D= [ 1.e-4 1.e-3 1.e-2];                          % : the initial distance metrics
+    w_gen = [  0.0002 ];  % : weight
+    init_lambda = [ 0.0001 0.001 ];                           % : the initial lambda
+    final_lambda = [0.99 0.999];                          % : the final lambda
+    tau_lambda = [ 0.05 0.1 ];                          % : the tau lambda
     
+    % best : 23.045.2020 at 4.18pm : 0.723 with
+    % 18/1/1/1/0.1/1e-3/0.01/1e-3/2e-4/0.001/0.99/0.1
     % Create a matrix with all the hyperparameters
     hyperparameters = transpose(combvec(n_in, n_out, diag_only,meta,meta_rate,...
         penalty, init_alpha, init_D, w_gen, init_lambda, final_lambda, tau_lambda));
     
     
     % Set up an ID for each combinaison & add it to the matrix
-    IDs = transpose([1:1:length(hyperparameters)]);
+    IDs = transpose([1:1:size(hyperparameters,1)]);
     hyperparameters = [IDs hyperparameters];
     
     % Transform the Matrix to a Table
@@ -76,18 +78,18 @@ else
    
      %% Launch LWPR Algorithm
      
-     [NMSE, CPU, Y_prediction]= lwpr_test(Hyperparameters,X,Y,Xt,Yt);
+     [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt);
      
      %% Write Table
      
-     writetable(hypToTest,fullfile('..', 'data', 'RESULTS','hyperparameters.dat'),'WriteRowNames',true)
-     writematrix(NMSE,fullfile('..', 'data', 'RESULTS','NMSE.dat'))
-     writematrix(CPU,fullfile('..', 'data', 'RESULTS','CPU.dat'))
-     writematrix(Y_prediction,fullfile('..', 'data', 'RESULTS','Y_prediction.dat'))
+%      writetable(hypToTest,fullfile('..', 'data', 'RESULTS','hyperparameters.dat'),'WriteRowNames',true)
+%      writematrix(NMSE,fullfile('..', 'data', 'RESULTS','NMSE.dat'))
+%      writematrix(CPU,fullfile('..', 'data', 'RESULTS','CPU.dat'))
+%      writematrix(Y_prediction,fullfile('..', 'data', 'RESULTS','Y_prediction.dat'))
 end
 
 %% Get the minimum nMSE and the ID
-NMSE(NMSE <= 0) = inf;
+NMSE(NMSE <= 0) = NaN;
 [value, index] = min(NMSE(2,:));
 
 Hyperparameters(index,:).ID
@@ -109,10 +111,30 @@ legend({'Prediction' 'Actual Return' 'Start of Test Set'})
 hold off
 saveas(fig,fullfile('..', 'figures','actualvspredicted.png'));
 
-%%
-IDs= Hyperparameters.ID;
-T_CPU = array2table([IDs transpose(CPU)]);
-T_CPU.Properties.VariableNames={'ID' 'Train CPU' 'Test CPU'};
-T_nMSE = array2table([IDs transpose(NMSE)]);
-T_nMSE.Properties.VariableNames={'ID' 'Train nMSE' 'Test nMSE'};
-TableModelsAnalyse=join(Hyperparameters,join(T_CPU,T_nMSE));
+% %%
+% IDs= Hyperparameters.ID;
+% T_CPU = array2table([IDs transpose(CPU)]);
+% T_CPU.Properties.VariableNames={'ID' 'TrainCPU' 'TestCPU'};
+% T_nMSE = array2table([IDs transpose(NMSE)]);
+% T_nMSE.Properties.VariableNames={'ID' 'TrainnMSE' 'TestnMSE'};
+% TableModelsAnalyse=join(Hyperparameters,join(T_CPU,T_nMSE));
+% %%
+% t_ = Hyperparameters.Properties.VariableNames(4:end);
+% fig2=figure();
+% for p =1:length(t_)
+%     subplot(5,2,p);
+%     boxplot([TableModelsAnalyse{:,14}],TableModelsAnalyse{:,t_{p}})
+%     title(sprintf('Parameter: %s', t_{p}))
+%     ylabel('CPU cons. (s)')
+% end
+% sgtitle('Train CPU / hyperparameter', 'FontSize', 20);
+% %%
+% fig3=figure();
+% for p =1:length(t_)
+%     subplot(5,2,p);
+%     boxplot([TableModelsAnalyse{:,17}],TableModelsAnalyse{:,t_{p}})
+%     title(sprintf('Parameter: %s', t_{p}))
+%     ylabel('Test nMSE')
+%     ylim([0.72 0.8])
+% end
+% sgtitle('Test nMSE / hyperparameter', 'FontSize', 20);

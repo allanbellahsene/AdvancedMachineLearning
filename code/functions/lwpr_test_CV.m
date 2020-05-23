@@ -31,7 +31,7 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
             [yp,w] = lwpr('Update',ID,X(inds(i),:)',Y(inds(i),:)');
             mse = mse + (Y(inds(i),:)-yp).^2;
         end
-        nMSE = mse/n/var(Y,1);
+        nMSE = mse/n/var(Y,1); % divide by n????
         
         e = cputime-t; % elapsed time 
         
@@ -43,17 +43,13 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         fprintf('#ID = %d #Data=%d #rfs=%d nMSE=%5.3f (TrainingSet) CPUtime: %g\n',ID,lwprs(ID).n_data,length(lwprs(ID).rfs),nMSE,e);
         
         %% Prediction
-        
+%         
         % create predictions for the test data
         t_2= cputime; % start time
         
-        Yp = zeros(size(Yt));
-        for i=1:length(Xt),
-            [yp,w,conf]=lwpr('Predict',ID,Xt(i,:)',0.001);
-            Yp(i,1) = yp;
-        end
-        
-        ep   = Yt-Yp;
+        [yp,w,conf]=lwpr('Predict',ID,Xt(1,:)',0.001);
+%         
+        ep   = Yt-yp;
         mse  = mean(ep.^2);
         nmse = mse/var(Y,1);
         
@@ -64,7 +60,7 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         % store data
         NMSE(2,k)=nmse;
         CPU(2,k)=e_2;
-        Y_prediction(:,k)=Yp;
+        Y_prediction(1,k)=yp;
         catch ME
         fprintf('No success: %s\n', ME.message);
         end

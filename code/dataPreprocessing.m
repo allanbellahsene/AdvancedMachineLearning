@@ -73,6 +73,60 @@ writetable(Funds_Returns,fullfile('..', 'data', 'CLEANED','Funds_Returns.dat'),'
 
 %% YIELDS IMPORTS
 
+yields = {'US10Y_data.csv'};
+
+% Setup the Import Options and import the data
+opts = delimitedTextImportOptions("NumVariables", 6);
+
+% Specify range and delimiter
+opts.DataLines = [2, Inf];
+opts.Delimiter = ",";
+
+% Specify column names and types
+opts.VariableNames = ["Date", "Price", "Var3", "Var4", "Var5", "Var6"];
+opts.SelectedVariableNames = ["Date", "Price"];
+opts.VariableTypes = ["datetime", "double", "string", "string", "string", "string"];
+
+% Specify file level properties
+opts.ExtraColumnsRule = "ignore";
+opts.EmptyLineRule = "read";
+
+% Specify variable properties
+opts = setvaropts(opts, ["Var3", "Var4", "Var5", "Var6"], "WhitespaceRule", "preserve");
+opts = setvaropts(opts, ["Var3", "Var4", "Var5", "Var6"], "EmptyFieldRule", "auto");
+opts = setvaropts(opts, "Date", "InputFormat", "");
+for i=1:1
+    path(i)= fullfile('..', 'data', 'FACTORS','TREASURY_YIELDS', yields(i));
+end
+
+% Import the data
+US10Y = readtable(path{1}, opts);
+US10Y.Date=datetime(US10Y.Date,'Format','yyyy-MM-dd');
+
+% Clear temporary variables
+clear opts
+
+
+% Join Yields
+
+Yields=rmmissing(US10Y);
+
+% divide by 100 add 1
+Yields(:,[2])=array2table(table2array(Yields(:,[2]))/100+1);
+
+
+% Compute return of funds
+delta_Yields(:,1)=Yields(2:end,1);  
+
+delta_Yields(:,2)=array2table(log(table2array(Yields(2:end,2))./table2array(Yields(1:end-1,2))));
+
+delta_Yields.Properties.VariableNames={'Date' 'US10Y'}; 
+
+% Export data
+writetable(delta_Yields,fullfile('..', 'data', 'CLEANED','delta_Yields.dat'),'WriteRowNames',true)  
+
+%% YIELDS IMPORTS
+
 yields = {'Switzerland10Y.csv','Japan10Y.csv' ,'Germany10Y.csv', 'France10Y.csv','US10Y_data.csv'};
 
 % Setup the Import Options and import the data

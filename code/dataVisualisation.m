@@ -32,18 +32,9 @@ data = innerjoin(data, commodities_Returns,'LeftKeys',1,'RightKeys',1);
 data = innerjoin(data, xrate_Changes,'LeftKeys',1,'RightKeys',1);
 data(2:end,5:end)=data(1:end-1,5:end);
 data(1:2,:) = [];
-columns=data.Properties.VariableNames;
-% T=X_T(:, contains(X_T.Properties.VariableNames, {'Date' 'y_t'}));
-% 
-% 
-% T(1,:)=[];
 
-% X_T.y_t=[];
-% X_T.y_t_1=[];
-% X_m=table2array(X_T(1:end-1,2:end));
-% X_m_1=table2array(X_T(1:end-2,3:end));
-% dataTable=[T, array2table(X_m), array2table(X_m_1)];
-% dataTable.Properties.VariableNames=columns;
+columns=data.Properties.VariableNames;
+
 
 writetable(data,fullfile('..', 'data', 'CLEANED','cleaned_data.dat'),'WriteRowNames',true)  
 %% Data visualisation
@@ -52,7 +43,7 @@ fig1=figure();
 
 set(gca,'FontSize',16,'XTickLabelRotation',90)
 set(gcf, 'Position',  [500, 500, 800, 1000])
-for i=1:21
+for i=1:size(columns,2)-1
     subplot(7,3,i)
     plot(table2array(data(:,1)), table2array(data(:,i+1))) 
     title(sprintf('%s', columns{i+1}))
@@ -82,7 +73,3 @@ set(gcf, 'Position',  [500, 500, 800, 1000])
 ylabel('Value (%)')
 title('Boxplot of all variables', 'FontSize', 20)
 saveas(fig2,fullfile('..', 'figures','Boxplot_01.png'));
-
-%% LWPR
-test_lwpr_2D();
-
