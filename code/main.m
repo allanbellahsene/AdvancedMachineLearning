@@ -20,7 +20,7 @@ data = readtable(fullfile('..', 'data', 'CLEANED', 'cleaned_data.dat'));
 if isfile(fullfile('..', 'data', 'RESULTS', 'hyperparameters.dat')) && ...
         isfile(fullfile('..', 'data', 'RESULTS', 'CPU.dat'))&& ...
         isfile(fullfile('..', 'data', 'RESULTS', 'NMSE.dat'))&& ...
-        isfile(fullfile('..', 'data', 'RESULTS', 'data_predictions', 'yPrediction.dat'))
+        isfile(fullfile('..', 'data', 'RESULTS', 'yPrediction.dat'))
     
     
     CPU = readmatrix(fullfile('..', 'data', 'RESULTS', 'CPU.dat'));
@@ -41,8 +41,8 @@ else
     initLambda = [1.e-5 1.e-4 1.e-3 ];                           % : the initial lambda
     finalLambda = [0.99 0.9999];                          % : the final lambda
     tauLambda = [ 0.05 0.1];                            % : the tau lambda
-
-%     
+    
+    %
     %% Initial Train & Test
     
     % Initial n
@@ -69,7 +69,7 @@ else
     Hyperparameters.Properties.VariableNames={'ID' 'diagOnly' 'meta' ...
         'metaRate' 'penalty' 'initAlpha' 'initD' 'wGen' 'initLambda' ...
         'finalLambda' 'tauLambda'};
-
+    
     
     %% Launch LWPR Algorithm
     % Initial n
@@ -81,16 +81,19 @@ else
         Hyperparameters.initAlpha==1.e-2  & Hyperparameters.initD==1.e-2  & ...
         Hyperparameters.wGen==1.e-4 & Hyperparameters.initLambda==1.e-4 &...
         Hyperparameters.finalLambda==0.99 & Hyperparameters.tauLambda==0.1);
-    hyperparameters_table = Hyperparameters(:,:); % change rows or : 
+    hyperparameters_table = Hyperparameters(:,:); % change rows or :
     hyperparameters_array=table2array(hyperparameters_table);
     
     NMSE_3D=zeros(2,length((hyperparameters_array(:,1))),nn);
     CPU_3D=zeros(2,length((hyperparameters_array(:,1))),nn);
     yPrediction = zeros(nn,length((hyperparameters_array(:,1))));
-
+    
     CV =0; % change to 1 for cross validation chain forwarding
     
     [NMSE_3D,CPU_3D,yPrediction] = lwpr_run(hyperparameters_array,data,CV,NMSE_3D,CPU_3D,yPrediction);
+    NMSE=mean(NMSE_3D,3);
+    CPU=mean(CPU_3D,3);
+
     %% Write Table
     %
     writetable(Hyperparameters,fullfile('..', 'data', 'RESULTS','hyperparameters_.dat'),'WriteRowNames',true)
@@ -98,26 +101,26 @@ else
     writematrix(CPU_3D,fullfile('..', 'data', 'RESULTS','CPU_.dat'))
     writematrix(yPrediction,fullfile('..', 'data', 'RESULTS','yPrediction_.dat'))
     %%
-
+    
 end
 
 %% Get the minimum nMSE and the ID
-NMSE=mean(NMSE_3D,3);
-CPU=mean(CPU_3D,3);
+CV =1 ;
 
 NMSE(NMSE <= 0) = NaN;
 [value, index] = min(NMSE(2,:));
+n= round(height(data)*0.7);
+nn = height(data)-n;
+Y = data.y_t(1:n);
 
-hyperparameters_table(index,:).ID
-
-Prediction_Plot=table(data.Date, data.y_t, cat(1,data.y_t(1:n),yPrediction(:,index)));
+Prediction_Plot=table(data.Date, data.y_t, cat(1,Y,yPrediction(:,index)));
 Prediction_Plot.Properties.VariableNames={'Date' 'Y' 'yPrediction'};
 writetable(Prediction_Plot(n+1:end,:),fullfile('..', 'data', 'RESULTS','predictions_LWPR_opti.csv'),'WriteRowNames',true)
 % Get back NMSE
 ep   = Prediction_Plot{n+1:end,2}-Prediction_Plot{n+1:end,3};
 mse  = mean(ep.^2);
 nmse = mse/var(Y,1);
-fprintf('#ID = %d nMSE=%5.3f \n',hyperparameters_table(index,:).ID,nmse);
+fprintf('#nMSE = %f \n',nmse);
 
 %% Plot
 fig= figure();
@@ -167,8 +170,8 @@ for p =1:length(t_)
 end
 sgtitle('Test nMSE / hyperparameter', 'FontSize', 20);
 saveas(fig3,fullfile('..', 'figures','TestnMSEhyperparameter.pdf'));
-%%
-%
+%% Plot MSE Vs Train Size
+% Don't run if you import .dat
 if CV ==1
     NMSE_N = zeros(nn,1);
     CPU_N=zeros(nn,1);
