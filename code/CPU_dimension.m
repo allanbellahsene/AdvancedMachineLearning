@@ -10,16 +10,14 @@ data = readtable(fullfile('..', 'data', 'CLEANED', 'cleaned_data.dat'));
 
 diagOnly = [1];                              % : 1/0 to update only the diagonal distance metric
 meta =  [1];                                   % : 1/0 to allow the use of a meta learning parameter
-metaRate = [  0.1];                    % : the meta learning rate
-penalty = [ 1.e-3];            % : a smoothness bias, usually a pretty small number (1.e-4)
-initAlpha= [  1.e-2 ];                    % : the initial learning rates
-initD= [  1.e-3  ];                          % : the initial distance metrics
-wGen = [ 2.e-4];  % : weight
-initLambda = [1.e-3 ];                           % : the initial lambda
+metaRate = [  0.01];                    % : the meta learning rate
+penalty = [ 0.0001];            % : a smoothness bias, usually a pretty small number (1.e-4)
+initAlpha= [  0.01 ];                    % : the initial learning rates
+initD= [  0.0001  ];                          % : the initial distance metrics
+wGen = [ 0.0002];  % : weight
+initLambda = [1.e-5];                           % : the initial lambda
 finalLambda = [0.99 ];                          % : the final lambda
 tauLambda = [  0.1];                            % : the tau lambda
-
-
 
 %% Initial Train & Test
 

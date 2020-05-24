@@ -77,30 +77,26 @@ else
     nn = height(data)-n;
     % /1/1/0.1/1e-3/0.01/1e-3/2e-4/0.001/0.99/0.1
     rows = ( Hyperparameters.diagOnly==1 & Hyperparameters.meta==1 & ...
-        Hyperparameters.metaRate==0.01  & Hyperparameters.penalty==1.e-3  & ...
-        Hyperparameters.initAlpha==1.e-3  & Hyperparameters.initD==1.e-2  & ...
-        Hyperparameters.wGen==2.e-4 & Hyperparameters.initLambda==1.e-3 &...
-        Hyperparameters.finalLambda==0.9999 & Hyperparameters.tauLambda==0.05);
-    hyperparameters_table = Hyperparameters(:,:);
+        Hyperparameters.metaRate==0.01  & Hyperparameters.penalty==1.e-4  & ...
+        Hyperparameters.initAlpha==1.e-2  & Hyperparameters.initD==1.e-2  & ...
+        Hyperparameters.wGen==1.e-4 & Hyperparameters.initLambda==1.e-4 &...
+        Hyperparameters.finalLambda==0.99 & Hyperparameters.tauLambda==0.1);
+    hyperparameters_table = Hyperparameters(:,:); % change rows or : 
     hyperparameters_array=table2array(hyperparameters_table);
     
     NMSE_3D=zeros(2,length((hyperparameters_array(:,1))),nn);
     CPU_3D=zeros(2,length((hyperparameters_array(:,1))),nn);
     yPrediction = zeros(nn,length((hyperparameters_array(:,1))));
-    % Choose the Hyperparameters to run:
-    % Best Run : 23.05.2020 at 4.18pm : 0.723 with
-    % 18/1
-    % /1/1/0.1/1e-3/0.01/1e-3/2e-4/0.001/0.99/0.1
-    % Choose specific hyperparameters to test
-    CV =1;
+
+    CV =0; % change to 1 for cross validation chain forwarding
     
     [NMSE_3D,CPU_3D,yPrediction] = lwpr_run(hyperparameters_array,data,CV,NMSE_3D,CPU_3D,yPrediction);
-    %      %% Write Table
+    %% Write Table
     %
-    writetable(Hyperparameters,fullfile('..', 'data', 'RESULTS','hyperparameters.dat'),'WriteRowNames',true)
-    writematrix(NMSE_3D,fullfile('..', 'data', 'RESULTS','NMSE.dat'))
-    writematrix(CPU_3D,fullfile('..', 'data', 'RESULTS','CPU.dat'))
-    writematrix(yPrediction,fullfile('..', 'data', 'RESULTS','yPrediction.dat'))
+    writetable(Hyperparameters,fullfile('..', 'data', 'RESULTS','hyperparameters_.dat'),'WriteRowNames',true)
+    writematrix(NMSE_3D,fullfile('..', 'data', 'RESULTS','NMSE_.dat'))
+    writematrix(CPU_3D,fullfile('..', 'data', 'RESULTS','CPU_.dat'))
+    writematrix(yPrediction,fullfile('..', 'data', 'RESULTS','yPrediction_.dat'))
     %%
 
 end
@@ -113,10 +109,16 @@ NMSE(NMSE <= 0) = NaN;
 [value, index] = min(NMSE(2,:));
 
 hyperparameters_table(index,:).ID
-fprintf('#ID = %d nMSE=%5.3f \n',hyperparameters_table(index,:).ID,value);
 
 Prediction_Plot=table(data.Date, data.y_t, cat(1,data.y_t(1:n),yPrediction(:,index)));
 Prediction_Plot.Properties.VariableNames={'Date' 'Y' 'yPrediction'};
+writetable(Prediction_Plot(n+1:end,:),fullfile('..', 'data', 'RESULTS','predictions_LWPR_opti.csv'),'WriteRowNames',true)
+% Get back NMSE
+ep   = Prediction_Plot{n+1:end,2}-Prediction_Plot{n+1:end,3};
+mse  = mean(ep.^2);
+nmse = mse/var(Y,1);
+fprintf('#ID = %d nMSE=%5.3f \n',hyperparameters_table(index,:).ID,nmse);
+
 %% Plot
 fig= figure();
 plot(Prediction_Plot.Date,Prediction_Plot.yPrediction, 'r','LineWidth',1.2)
@@ -134,19 +136,19 @@ saveas(fig,fullfile('..', 'figures','actualvspredicted.pdf'));
 
 
 %%
-IDs= hyperparameters_table.ID;
+IDs= Hyperparameters.ID;
 T_CPU = array2table([IDs transpose(CPU)]);
 T_CPU.Properties.VariableNames={'ID' 'TrainCPU' 'TestCPU'};
 T_nMSE = array2table([IDs transpose(NMSE)]);
 T_nMSE.Properties.VariableNames={'ID' 'TrainnMSE' 'TestnMSE'};
-TableModelsAnalyse=join(hyperparameters_table,join(T_CPU,T_nMSE));
+TableModelsAnalyse=join(Hyperparameters,join(T_CPU,T_nMSE));
 %%
-t_ = hyperparameters_table.Properties.VariableNames(4:end);
+t_ = Hyperparameters.Properties.VariableNames(2:end);
 fig2=figure();
 set(gcf, 'Position',  [500, 500, 600, 800])
 for p =1:length(t_)
     subplot(5,2,p);
-    boxplot([TableModelsAnalyse{:,14}],TableModelsAnalyse{:,t_{p}})
+    boxplot([TableModelsAnalyse{:,12}],TableModelsAnalyse{:,t_{p}})
     title(sprintf('Parameter: %s', t_{p}))
     ylabel('CPU cons. (s)')
 end
@@ -158,10 +160,10 @@ fig3=figure();
 set(gcf, 'Position',  [500, 500, 600, 800])
 for p =1:length(t_)
     subplot(5,2,p);
-    boxplot([TableModelsAnalyse{:,17}],TableModelsAnalyse{:,t_{p}})
+    boxplot([TableModelsAnalyse{:,15}],TableModelsAnalyse{:,t_{p}})
     title(sprintf('Parameter: %s', t_{p}))
     ylabel('Test nMSE')
-    ylim([0.72 0.75])
+    ylim([0.7 0.8])
 end
 sgtitle('Test nMSE / hyperparameter', 'FontSize', 20);
 saveas(fig3,fullfile('..', 'figures','TestnMSEhyperparameter.pdf'));
@@ -179,6 +181,7 @@ if CV ==1
     outcomeVStrainSize=[train_size NMSE_N CPU_N];
     
     fig4=figure();
+    set(gcf, 'Position',  [500, 500, 600, 800])
     scatter(outcomeVStrainSize(:,1),outcomeVStrainSize(:,3),'b')
     h = lsline;
     set(h(1),'color','r','LineWidth',1.2)
@@ -193,3 +196,18 @@ else
     fprintf('\n Can not do last figure; \n CV should be 1 to check data size impact\n')
 end
 
+
+%% Sensitivity to number of observation
+y_nmse=zeros(nn,1);
+for j = 1:size(NMSE_3D,3)
+    y_nmse(j,1) = mean(NMSE_3D(1,:,1:j));
+end
+fig5=figure();
+plot(train_size,y_nmse)
+set(gca,'FontSize',16)
+set(gcf, 'Position',  [500, 500, 600, 800])
+title('Average test nMSE as function of train data size','FontSize', 20)
+xlabel('Train Data Size','FontSize', 16)
+ylabel('Test nMSE','FontSize', 16)
+xlim([800 1100])
+saveas(fig5,fullfile('..', 'figures','Sensitivity_LWPR.pdf'));

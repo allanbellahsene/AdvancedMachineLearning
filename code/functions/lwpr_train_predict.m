@@ -24,7 +24,6 @@ function [NMSE, CPU, Y_prediction]= lwpr_train_predict(hyperparameters,X,Y,Xt,Yt
         
         %% Train Data
         t= cputime; % start time 
-        
         inds = randperm(n);
         mse = 0;
         for i=1:n
