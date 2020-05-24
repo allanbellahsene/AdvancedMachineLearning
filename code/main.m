@@ -14,36 +14,35 @@ rng default                                     % keep same random numbers
 %% Imports data
 data = readtable(fullfile('..', 'data', 'CLEANED', 'cleaned_data.dat'));
 
-
 %% Get Data if Already Exists
 %TT = readtable(fullfile('..', 'data', 'RESULTS', 'hyperparameters_2.dat'));
 % download data
 if isfile(fullfile('..', 'data', 'RESULTS', 'hyperparameters.dat')) && ...
         isfile(fullfile('..', 'data', 'RESULTS', 'CPU.dat'))&& ...
         isfile(fullfile('..', 'data', 'RESULTS', 'NMSE.dat'))&& ...
-        isfile(fullfile('..', 'data', 'RESULTS', 'Y_Prediction.dat'))
+        isfile(fullfile('..', 'data', 'RESULTS', 'data_predictions', 'yPrediction.dat'))
     
     
-     CPU = readmatrix(fullfile('..', 'data', 'RESULTS', 'CPU.dat'));
-     NMSE = readmatrix(fullfile('..', 'data', 'RESULTS', 'NMSE.dat'));
-     yPrediction = readmatrix(fullfile('..', 'data', 'RESULTS', 'Y_Prediction.dat'));
-     Hyperparameters = readtable(fullfile('..', 'data', 'RESULTS', 'hyperparameters.dat'));
- 
+    CPU = readmatrix(fullfile('..', 'data', 'RESULTS', 'CPU.dat'));
+    NMSE = readmatrix(fullfile('..', 'data', 'RESULTS', 'NMSE.dat'));
+    yPrediction = readmatrix(fullfile('..', 'data', 'RESULTS', 'yPrediction.dat'));
+    Hyperparameters = readtable(fullfile('..', 'data', 'RESULTS', 'hyperparameters.dat'));
+    
 else
     %% initialize LWPR
-  
+    
     diagOnly = [0 1];                              % : 1/0 to update only the diagonal distance metric
     meta = [0 1];                                   % : 1/0 to allow the use of a meta learning parameter
-    metaRate = [ 0.001 0.01 0.1 0.15];                    % : the meta learning rate
-    penalty = [ 1.e-5 1.e-4 1.e-3];            % : a smoothness bias, usually a pretty small number (1.e-4)
-    initAlpha= [ 1.e-5 1.e-4 1.e-3 1.e-2 ];                    % : the initial learning rates
-    initD= [ 1.e-4 1.e-3 1.e-2 1.e-1];                          % : the initial distance metrics
+    metaRate = [ 0.001 0.01 0.1];                    % : the meta learning rate
+    penalty = [ 1.e-4 1.e-3];            % : a smoothness bias, usually a pretty small number (1.e-4)
+    initAlpha= [ 1.e-4 1.e-3 1.e-2 ];                    % : the initial learning rates
+    initD= [ 1.e-4 1.e-3 1.e-2 ];                          % : the initial distance metrics
     wGen = [ 1.e-4 1.5e-4 2.e-4];  % : weight
     initLambda = [1.e-5 1.e-4 1.e-3 ];                           % : the initial lambda
-    finalLambda = [0.99 0.999 0.9999];                          % : the final lambda
-    tauLambda = [0.01 0.05 0.1];                            % : the tau lambda
-    
-    
+    finalLambda = [0.99 0.9999];                          % : the final lambda
+    tauLambda = [ 0.05 0.1];                            % : the tau lambda
+
+%     
     %% Initial Train & Test
     
     % Initial n
@@ -56,12 +55,8 @@ else
     % Initial Test
     Xt = table2array(data(n+1:n+1,3:end));
     Yt = data.y_t(n+1:n+1);
-    
-    nIn = size(X,2) ;                              % : number of input dimensions
-    nOut = size(Y,2) ;                             % : number of output dimensions
-    
     % Create a matrix with all the hyperparameters
-    hyperparameters = transpose(combvec(nIn, nOut, diagOnly,meta,metaRate,...
+    hyperparameters = transpose(combvec(diagOnly,meta,metaRate,...
         penalty, initAlpha, initD, wGen, initLambda, finalLambda, tauLambda));
     
     
@@ -71,21 +66,22 @@ else
     
     % Transform the Matrix to a Table
     Hyperparameters = array2table(hyperparameters);
-    Hyperparameters.Properties.VariableNames={'ID' 'nIn' 'nOut' 'diagOnly' 'meta' ...
+    Hyperparameters.Properties.VariableNames={'ID' 'diagOnly' 'meta' ...
         'metaRate' 'penalty' 'initAlpha' 'initD' 'wGen' 'initLambda' ...
         'finalLambda' 'tauLambda'};
-   
-     %% Launch LWPR Algorithm
-      % Initial n
+
+    
+    %% Launch LWPR Algorithm
+    % Initial n
     n= round(height(data)*0.7);
     nn = height(data)-n;
-    
-    rows = ( Hyperparameters.meta==1 &...
-        Hyperparameters.metaRate==0.1 & Hyperparameters.penalty==1e-3 & ...
-        Hyperparameters.initAlpha==0.01 & Hyperparameters.initD==1e-3 & ...
-        Hyperparameters.wGen==2e-4 & Hyperparameters.initLambda==0.001 &...
-        Hyperparameters.finalLambda==0.99 & Hyperparameters.tauLambda==0.1);
-    hyperparameters_table = Hyperparameters(rows,:);
+    % /1/1/0.1/1e-3/0.01/1e-3/2e-4/0.001/0.99/0.1
+    rows = ( Hyperparameters.diagOnly==1 & Hyperparameters.meta==1 & ...
+        Hyperparameters.metaRate==0.01  & Hyperparameters.penalty==1.e-3  & ...
+        Hyperparameters.initAlpha==1.e-3  & Hyperparameters.initD==1.e-2  & ...
+        Hyperparameters.wGen==2.e-4 & Hyperparameters.initLambda==1.e-3 &...
+        Hyperparameters.finalLambda==0.9999 & Hyperparameters.tauLambda==0.05);
+    hyperparameters_table = Hyperparameters(:,:);
     hyperparameters_array=table2array(hyperparameters_table);
     
     NMSE_3D=zeros(2,length((hyperparameters_array(:,1))),nn);
@@ -96,25 +92,17 @@ else
     % 18/1
     % /1/1/0.1/1e-3/0.01/1e-3/2e-4/0.001/0.99/0.1
     % Choose specific hyperparameters to test
-    CV = 0;
+    CV =1;
     
-%     for j = 1:nn
-%         % Train Data
-%         X = table2array(data(1:n+j-1,3:end));
-%         Y = data.y_t(1:n+j-1);
-%         % Initial Test
-%         Xt = table2array(data(n+j:n+j,3:end));
-%         Yt = data.y_t(n+j:n+j);
-%         [NMSE_3D(:,:,j), CPU_3D(:,:,j), Y_prediction(j,:)]= lwpr_test(hyperparameters,X,Y,Xt,Yt,CV);
-%     end
-%     
     [NMSE_3D,CPU_3D,yPrediction] = lwpr_run(hyperparameters_array,data,CV,NMSE_3D,CPU_3D,yPrediction);
-%      %% Write Table
-%      
-%      writetable(Hyperparameters,fullfile('..', 'data', 'RESULTS','hyperparameters.dat'),'WriteRowNames',true)
-%      writematrix(NMSE_3D,fullfile('..', 'data', 'RESULTS','NMSE.dat'))
-%      writematrix(CPU_3D,fullfile('..', 'data', 'RESULTS','CPU.dat'))
-%      writematrix(Y_prediction,fullfile('..', 'data', 'RESULTS','Y_prediction.dat'))
+    %      %% Write Table
+    %
+    writetable(Hyperparameters,fullfile('..', 'data', 'RESULTS','hyperparameters.dat'),'WriteRowNames',true)
+    writematrix(NMSE_3D,fullfile('..', 'data', 'RESULTS','NMSE.dat'))
+    writematrix(CPU_3D,fullfile('..', 'data', 'RESULTS','CPU.dat'))
+    writematrix(yPrediction,fullfile('..', 'data', 'RESULTS','yPrediction.dat'))
+    %%
+
 end
 
 %% Get the minimum nMSE and the ID
@@ -135,14 +123,14 @@ plot(Prediction_Plot.Date,Prediction_Plot.yPrediction, 'r','LineWidth',1.2)
 hold on
 plot(Prediction_Plot.Date,Prediction_Plot.Y,'b','LineWidth',1.2)
 set(gca,'FontSize',16)
-set(gcf, 'Position',  [500, 500, 800, 1000])
-title('Actual Portfolio Return vs Predicted Portfolio Return using LWPR','FontSize', 20)
+set(gcf, 'Position',  [500, 500, 600, 800])
+title('Actual Return vs Predicted Return','FontSize', 18)
 xlabel('Date','FontSize', 16)
 ylabel('Daily Return','FontSize', 16)
 xline(Prediction_Plot.Date(n),'LineWidth',3)
 legend({'Prediction' 'Actual Return' 'Start of Test Set'})
 hold off
-saveas(fig,fullfile('..', 'figures','actualvspredicted.png'));
+saveas(fig,fullfile('..', 'figures','actualvspredicted.pdf'));
 
 
 %%
@@ -155,26 +143,28 @@ TableModelsAnalyse=join(hyperparameters_table,join(T_CPU,T_nMSE));
 %%
 t_ = hyperparameters_table.Properties.VariableNames(4:end);
 fig2=figure();
-set(gcf, 'Position',  [500, 500, 800, 1000])
+set(gcf, 'Position',  [500, 500, 600, 800])
 for p =1:length(t_)
     subplot(5,2,p);
     boxplot([TableModelsAnalyse{:,14}],TableModelsAnalyse{:,t_{p}})
     title(sprintf('Parameter: %s', t_{p}))
     ylabel('CPU cons. (s)')
 end
-
 sgtitle('Train CPU / hyperparameter', 'FontSize', 20);
+saveas(fig2,fullfile('..', 'figures','TrainCPUhyperparameter.pdf'));
+
 %%
 fig3=figure();
-set(gcf, 'Position',  [500, 500, 800, 1000])
+set(gcf, 'Position',  [500, 500, 600, 800])
 for p =1:length(t_)
     subplot(5,2,p);
     boxplot([TableModelsAnalyse{:,17}],TableModelsAnalyse{:,t_{p}})
     title(sprintf('Parameter: %s', t_{p}))
     ylabel('Test nMSE')
-    ylim([0.72 0.8])
+    ylim([0.72 0.75])
 end
 sgtitle('Test nMSE / hyperparameter', 'FontSize', 20);
+saveas(fig3,fullfile('..', 'figures','TestnMSEhyperparameter.pdf'));
 %%
 %
 if CV ==1
@@ -189,17 +179,17 @@ if CV ==1
     outcomeVStrainSize=[train_size NMSE_N CPU_N];
     
     fig4=figure();
-    plot(outcomeVStrainSize(:,1),outcomeVStrainSize(:,2), 'r','LineWidth',1.2)
-    hold on
-    plot(outcomeVStrainSize(:,1),outcomeVStrainSize(:,3),'b','LineWidth',1.2)
+    scatter(outcomeVStrainSize(:,1),outcomeVStrainSize(:,3),'b')
+    h = lsline;
+    set(h(1),'color','r','LineWidth',1.2)
     set(gca,'FontSize',16)
-    title('Impact of N','FontSize', 20)
+    title('CPU time (seconds) to train LWPR as function of N','FontSize', 20)
     xlabel('Train Sample Size','FontSize', 16)
-    legend({'nMSE' 'CPU Time (s)'})
+    legend({ 'CPU Time (s)'})
+    xlim([800 1100])
     hold off
-    saveas(fig,fullfile('..', 'figures','TrainDataSizeImpact.png'));
+    saveas(fig4,fullfile('..', 'figures','CPU_LWPR.pdf'));
 else
     fprintf('\n Can not do last figure; \n CV should be 1 to check data size impact\n')
 end
-
 

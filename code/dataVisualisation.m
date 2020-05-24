@@ -21,8 +21,7 @@ xrate_Changes = readtable(fullfile('..', 'data', 'CLEANED', 'exchangeRates_Chang
 portfolio_Return(:,1)=funds_Returns(:,1); 
 portfolio_Return(:,2)=array2table(1/5*(table2array(funds_Returns(:,2))+table2array(funds_Returns(:,3)) +table2array(funds_Returns(:,4)) +table2array(funds_Returns(:,5)) +table2array(funds_Returns(:,6)) ));
 portfolio_Return(2:end,3)=portfolio_Return(1:end-1,2);
-portfolio_Return(3:end,4)=portfolio_Return(1:end-2,2);
-portfolio_Return.Properties.VariableNames={'Date' 'y_t' 'y_t_1' 'y_t_2' };
+portfolio_Return.Properties.VariableNames={'Date' 'y_t' 'y_t_1' };
 
 %%
 % Create Matrix with t-1
@@ -49,7 +48,7 @@ for i=1:size(columns,2)-1
     title(sprintf('%s', columns{i+1}))
 end
 sgtitle('Daily Returns', 'FontSize', 20);
-saveas(fig1,fullfile('..', 'figures','daily_return.png'));
+saveas(fig1,fullfile('..', 'figures','daily_return.svg'));
 
 %% Functions
 dataExploratory= removevars(data,{'Date'});
@@ -61,7 +60,7 @@ correlationTable.Properties.RowNames=dataExploratory.Properties.VariableNames;
 fig3=figure();
 set(gcf, 'Position',  [500, 500, 800, 1000])
 heatmap(correlationTable.Properties.VariableNames,correlationTable.Properties.VariableNames,abs(correlationTable.Variables),'FontSize',16)
-saveas(fig3,fullfile('..', 'figures','Heatmap_01.png'));
+saveas(fig3,fullfile('..', 'figures','Heatmap_01.svg'));
 
 %% Boxplot
 
@@ -72,4 +71,4 @@ set(gca,'FontSize',16,'XTickLabelRotation',90)
 set(gcf, 'Position',  [500, 500, 800, 1000])
 ylabel('Value (%)')
 title('Boxplot of all variables', 'FontSize', 20)
-saveas(fig2,fullfile('..', 'figures','Boxplot_01.png'));
+saveas(fig2,fullfile('..', 'figures','Boxplot_01.svg'));
