@@ -1,4 +1,4 @@
-function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
+function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt,CV)
     global lwprs;
     
     NMSE = zeros(2,length((hyperparameters(:,1))));
@@ -43,28 +43,48 @@ function [NMSE, CPU, Y_prediction]= lwpr_test(hyperparameters,X,Y,Xt,Yt)
         fprintf('#ID = %d #Data=%d #rfs=%d nMSE=%5.3f (TrainingSet) CPUtime: %g\n',ID,lwprs(ID).n_data,length(lwprs(ID).rfs),nMSE,e);
         
         %% Prediction
-        
+%         
         % create predictions for the test data
         t_2= cputime; % start time
-        
-        Yp = zeros(size(Yt));
-        for i=1:length(Xt),
-            [yp,w,conf]=lwpr('Predict',ID,Xt(i,:)',0.001);
-            Yp(i,1) = yp;
+        if CV ==1
+            [yp,w,conf]=lwpr('Predict',ID,Xt(1,:)',0.001);
+            %
+            ep   = Yt-yp;
+            mse  = mean(ep.^2);
+            nmse = mse/var(Y,1);
+            
+            e_2 = cputime-t_2; % elapsed time
+            
+            fprintf('#ID = %d #Data=%d #rfs=%d nMSE=%5.3f (TestSet)  CPUtime: %g\n',ID,lwprs(ID).n_data,length(lwprs(ID).rfs),nmse, e_2);
+            
+            % store data
+            NMSE(2,k)=nmse;
+            CPU(2,k)=e_2;
+            Y_prediction(1,k)=yp;
+        elseif CV ==0
+            % create predictions for the test data
+            t_2= cputime; % start time
+            
+            Yp = zeros(size(Yt));
+            for i=1:length(Xt),
+                [yp,w,conf]=lwpr('Predict',ID,Xt(i,:)',0.001);
+                Yp(i,1) = yp;
+            end
+            ep   = Yt-Yp;
+            mse  = mean(ep.^2);
+            nmse = mse/var(Y,1);
+            
+            e_2 = cputime-t_2; % elapsed time
+            
+            fprintf('#ID = %d #Data=%d #rfs=%d nMSE=%5.3f (TestSet)  CPUtime: %g\n',ID,lwprs(ID).n_data,length(lwprs(ID).rfs),nmse, e_2);
+            
+            % store data
+            NMSE(2,k)=nmse;
+            CPU(2,k)=e_2;
+            Y_prediction(:,k)=Yp;
+        else 
+            fprint('Error');
         end
-        
-        ep   = Yt-Yp;
-        mse  = mean(ep.^2);
-        nmse = mse/var(Y,1);
-        
-        e_2 = cputime-t_2; % elapsed time 
-      
-        fprintf('#ID = %d #Data=%d #rfs=%d nMSE=%5.3f (TestSet)  CPUtime: %g\n',ID,lwprs(ID).n_data,length(lwprs(ID).rfs),nmse, e_2);
-        
-        % store data
-        NMSE(2,k)=nmse;
-        CPU(2,k)=e_2;
-        Y_prediction(:,k)=Yp;
         catch ME
         fprintf('No success: %s\n', ME.message);
         end
