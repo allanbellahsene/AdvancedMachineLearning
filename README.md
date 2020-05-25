@@ -13,16 +13,15 @@ Please see the report for further information concerning the results and the met
 ######################################## 0. Setup #######################################
 
 The code for the LWPR is done in Matlab, and for the SVR in python.
-Our code uses different external libraries (numpy, scipy, pandas, scikit-learn, ...) and the LWPR code
-Made available by Prof. Billard (EPFL) based on the work of Schaal et al. (2000)
+Our code uses different external libraries (numpy, scipy, pandas, scikit-learn, ...) and the LWPR code made available by Prof. Billard (EPFL) based on the work of Schaal et al. (2000)
 
 ####################################### I. Structure ######################################
 #######################################################################################
-The parent folder called "AdvancedMachineLearning" contains three folders and 1 file:
+The parent folder called "AdvancedMachineLearning_teamO" contains three folders and 1 file:
 
-1) code: a folder containing the LWPR code in Matlab
+1) AML_teamO_report.pdf: the report in pdf
 
-2) SVR: a folder containing the SVR code in Python (jupyter notebook), the data used, as well as the figures   
+2) code: a folder containing the LWPR code in Matlab
 
 3) data: a folder containing the data (basic data and results)
 
@@ -30,7 +29,9 @@ The parent folder called "AdvancedMachineLearning" contains three folders and 1 
 
 5) README.md: a folder containing the report
 
-6) report.pdf: the report
+6) SVR: a folder containing the SVR code in Python (jupyter notebook), the data used, as well as the figures   
+
+
 #######################################################################################
 The code folder is divided into 1 folder and 5 files:
 
